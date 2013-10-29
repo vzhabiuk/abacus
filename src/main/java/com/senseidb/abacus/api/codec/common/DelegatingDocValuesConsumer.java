@@ -1,4 +1,4 @@
-package com.senseidb.abacus.api.codec;
+package com.senseidb.abacus.api.codec.common;
 
 import java.io.IOException;
 
@@ -7,12 +7,12 @@ import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.SegmentWriteState;
 import org.apache.lucene.util.BytesRef;
 
-public class AbacusDocValuesConsumer extends DocValuesConsumer {
+public class DelegatingDocValuesConsumer extends DocValuesConsumer {
 
   private final SegmentWriteState state;
   private final DocValuesConsumer delegate;
   
-  public AbacusDocValuesConsumer(SegmentWriteState state, DocValuesConsumer docValuesConsumer) {
+  public DelegatingDocValuesConsumer(SegmentWriteState state, DocValuesConsumer docValuesConsumer) {
     this.state = state;
     this.delegate = docValuesConsumer;
   }
@@ -25,12 +25,7 @@ public class AbacusDocValuesConsumer extends DocValuesConsumer {
   @Override
   public void addNumericField(FieldInfo field, Iterable<Number> values)
       throws IOException {
-    int numDocs = state.segmentInfo.getDocCount();
-    long[] vals = new long[numDocs];
-    int i = 0;
-    for (Number value : values) {
-      vals[i++] = value.longValue();
-    }
+    
     delegate.addNumericField(field, values);
   }
 

@@ -18,6 +18,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 
+
 public class AbacusFacetFieldsProducer extends FieldsProducer {  
   private IndexInput in;
   private final PostingsReaderBase postingsReader;

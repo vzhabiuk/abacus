@@ -1,4 +1,4 @@
-package com.senseidb.abacus.api.codec;
+package com.senseidb.abacus.api.codec.common;
 
 import java.io.IOException;
 
@@ -8,25 +8,24 @@ import org.apache.lucene.codecs.DocValuesProducer;
 import org.apache.lucene.index.SegmentReadState;
 import org.apache.lucene.index.SegmentWriteState;
 
-public class AbacusDocValuesFormat extends DocValuesFormat {
-
-  static final String NAME = "BoboDocValuesFormat";
+public class DelegatingDocValuesFormat extends DocValuesFormat {
+  
   private final DocValuesFormat delegate;
-  protected AbacusDocValuesFormat(DocValuesFormat delegate) {
-    super(NAME);
+  public DelegatingDocValuesFormat(String name, DocValuesFormat delegate) {
+    super(name);
     this.delegate = delegate;
   }
 
   @Override
   public DocValuesConsumer fieldsConsumer(SegmentWriteState state)
       throws IOException {
-    return new AbacusDocValuesConsumer(state, delegate.fieldsConsumer(state));
+    return new DelegatingDocValuesConsumer(state, delegate.fieldsConsumer(state));
   }
 
   @Override
   public DocValuesProducer fieldsProducer(SegmentReadState state)
       throws IOException {
-    return new AbacusDocValuesProducer(state, delegate.fieldsProducer(state));
+    return new DelegatingDocValuesProducer(state, delegate.fieldsProducer(state));
   }
 
 }

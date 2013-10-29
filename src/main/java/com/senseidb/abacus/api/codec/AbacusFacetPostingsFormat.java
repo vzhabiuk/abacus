@@ -13,6 +13,9 @@ import org.apache.lucene.index.SegmentReadState;
 import org.apache.lucene.index.SegmentWriteState;
 import org.apache.lucene.util.IOUtils;
 
+import com.senseidb.abacus.api.codec.common.DocIdSetCollector;
+import com.senseidb.abacus.api.codec.common.OpenBitsetDocIdSetCollector;
+
 public class AbacusFacetPostingsFormat extends PostingsFormat {
 
   private static final String NAME = "BoboPostingsFormat";

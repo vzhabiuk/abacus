@@ -1,4 +1,4 @@
-package com.senseidb.abacus.api.codec;
+package com.senseidb.abacus.api.codec.common;
 
 import java.io.IOException;
 
@@ -10,12 +10,12 @@ import org.apache.lucene.index.SegmentReadState;
 import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 
-public class AbacusDocValuesProducer extends DocValuesProducer {
+public class DelegatingDocValuesProducer extends DocValuesProducer {
 
   private final SegmentReadState state;
   private final DocValuesProducer delegate;
   
-  public AbacusDocValuesProducer(SegmentReadState state, DocValuesProducer delegate) {
+  public DelegatingDocValuesProducer(SegmentReadState state, DocValuesProducer delegate) {
     this.state = state;
     this.delegate = delegate;
   }

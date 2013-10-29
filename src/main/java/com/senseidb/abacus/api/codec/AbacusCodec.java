@@ -6,6 +6,8 @@ import org.apache.lucene.codecs.FilterCodec;
 import org.apache.lucene.codecs.PostingsFormat;
 import org.apache.lucene.codecs.lucene42.Lucene42Codec;
 
+import com.senseidb.abacus.api.codec.common.DelegatingDocValuesFormat;
+
 public class AbacusCodec extends FilterCodec {
 
 	private static final String CODEC_NAME = "AbacusCodec";
@@ -18,7 +20,7 @@ public class AbacusCodec extends FilterCodec {
 
   @Override
   public DocValuesFormat docValuesFormat() {
-    return new AbacusDocValuesFormat(luceneCodec.docValuesFormat());
+    return new DelegatingDocValuesFormat("AbacusValuesFormat", luceneCodec.docValuesFormat());
   }
 
   @Override

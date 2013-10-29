@@ -78,5 +78,5 @@ public class AbacusCodecTest {
     reader.close();
   }
   
-  private static AbacusCodec codec = new AbacusCodec();
+ // private static AbacusCodec codec = new AbacusCodec();
 }
