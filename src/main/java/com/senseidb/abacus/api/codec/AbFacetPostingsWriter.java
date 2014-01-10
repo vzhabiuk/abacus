@@ -1,9 +1,7 @@
 package com.senseidb.abacus.api.codec;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.senseidb.abacus.api.codec.common.DocIdSetCollector;
+import com.senseidb.abacus.api.codec.postings.OpenBitsetDocIdSetCollector;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.codecs.PostingsWriterBase;
 import org.apache.lucene.codecs.TermStats;
@@ -16,7 +14,7 @@ import org.apache.lucene.store.RAMOutputStream;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 
-import com.senseidb.abacus.api.codec.common.DocIdSetCollector;
+import java.io.IOException;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -35,33 +33,30 @@ import com.senseidb.abacus.api.codec.common.DocIdSetCollector;
  * limitations under the License.
  */
 
-public class AbacusFacetPostingsWriter extends PostingsWriterBase {
+public class AbFacetPostingsWriter extends PostingsWriterBase {
 
   final static String DOC_CODEC = "BoboFacetPostingsWriterDoc";
   final static String TERMS_CODEC = "BoboFacetPostingsWriterTerms";
 
   public final static int BLOCK_SIZE = 128;
 
-//Increment version to change it
  final static int VERSION_START = 0;
  final static int VERSION_CURRENT = VERSION_START;
   final IndexOutput docOut;
-  private IndexOutput termsOut;
 
-  private long docTermStartFP;
   private int currentDoc = -1;
   
   private final int maxDoc;
   private final DocIdSetCollector docidCollector;
-  
-  public AbacusFacetPostingsWriter(SegmentWriteState state, DocIdSetCollector docidCollector) throws IOException{
-    this.docidCollector = docidCollector;
+
+  public AbFacetPostingsWriter(SegmentWriteState state) throws IOException{
+    this.docidCollector = new OpenBitsetDocIdSetCollector();
     maxDoc = state.segmentInfo.getDocCount();
 
     docOut = state.directory.createOutput(IndexFileNames.segmentFileName(state.segmentInfo.name, state.segmentSuffix,
         AbacusFacetPostingsFormat.DOC_EXTENSION),
         state.context);
-    
+
     boolean success = false;
 
     try {
@@ -76,69 +71,36 @@ public class AbacusFacetPostingsWriter extends PostingsWriterBase {
 
   @Override
   public void start(IndexOutput termsOut) throws IOException {
-    this.termsOut = termsOut;
     CodecUtil.writeHeader(termsOut, TERMS_CODEC, VERSION_CURRENT);
     termsOut.writeVInt(BLOCK_SIZE);
   }
 
+
   @Override
   public void startTerm() throws IOException {
-    docTermStartFP = docOut.getFilePointer();
     docidCollector.reset(maxDoc);
   }
 
-  private final RAMOutputStream bytesWriter = new RAMOutputStream();
+    @Override
+    public void finishTerm(TermStats stats) throws IOException {
+        //docOut.writeVInt(stats.docFreq);
+        docidCollector.flush(stats, docOut);
+        docOut.flush();
+    }
+
+
+    private final RAMOutputStream bytesWriter = new RAMOutputStream();
 
   @Override
   public void flushTermsBlock(int start, int count) throws IOException {
-    if (count == 0) {
-      termsOut.writeByte((byte) 0);
-      return;
-    }
 
-    assert start <= pendingTerms.size();
-    assert count <= start;
-
-    final int limit = pendingTerms.size() - start + count;
-
-    for(int idx=limit-count; idx<limit; idx++) {
-      PendingTerm term = pendingTerms.get(idx);
-      bytesWriter.writeVLong(term.docStartFP);
-    }
-
-    termsOut.writeVInt((int) bytesWriter.getFilePointer());
-    bytesWriter.writeTo(termsOut);
-    bytesWriter.reset();
-    termsOut.flush();
-
-    // Remove the terms we just wrote:
-    pendingTerms.subList(limit-count, limit).clear();
   }
 
-  private static class PendingTerm {
-    public final long docStartFP;
 
-    public PendingTerm(long docStartFP) {
-      this.docStartFP = docStartFP;
-    }
-  }
-
-  private final List<PendingTerm> pendingTerms = new ArrayList<PendingTerm>();
-
-  @Override
-  public void finishTerm(TermStats stats) throws IOException {
-    pendingTerms.add(new PendingTerm(docTermStartFP));
-    
-    // write it out!
-
-    docOut.writeVInt(stats.docFreq);    
-    docidCollector.flush(stats, docOut);
-    docOut.flush();
-  }
 
   @Override
   public void setField(FieldInfo fieldInfo) {
-    assert IndexOptions.DOCS_ONLY == fieldInfo.getIndexOptions();
+      assert IndexOptions.DOCS_ONLY == fieldInfo.getIndexOptions();
   }
 
   @Override

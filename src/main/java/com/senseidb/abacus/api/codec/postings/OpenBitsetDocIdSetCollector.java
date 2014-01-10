@@ -1,12 +1,13 @@
-package com.senseidb.abacus.api.codec.common;
+package com.senseidb.abacus.api.codec.postings;
 
-import java.io.IOException;
-
+import com.senseidb.abacus.api.codec.common.DocIdSetCollector;
 import org.apache.lucene.codecs.TermStats;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.util.OpenBitSet;
+
+import java.io.IOException;
 
 public class OpenBitsetDocIdSetCollector implements DocIdSetCollector {
 
