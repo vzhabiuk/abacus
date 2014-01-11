@@ -70,9 +70,6 @@ public class VaribleSizeTermEnum extends TermsEnum {
                                   BytesRef value,
                                   Comparator<BytesRef> comparator) {
     BytesRef start = new BytesRef(a, offsets[fromIndex], getLength(fromIndex, offsets,a.length));
-    for (int i = 0; i < termCount; i++) {
-      System.out.println(new BytesRef(a, offsets[i], getLength(i, offsets,a.length)).utf8ToString());
-    }
     BytesRef end = new BytesRef(a, offsets[toIndex], getLength(toIndex, offsets,a.length));
     BytesRef middle = new BytesRef(a, 0, 0);
     while (fromIndex <= toIndex){
