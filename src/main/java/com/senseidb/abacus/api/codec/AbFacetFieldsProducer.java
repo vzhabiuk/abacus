@@ -1,7 +1,7 @@
 package com.senseidb.abacus.api.codec;
 
 import com.senseidb.abacus.api.codec.term.BytesTerms;
-import org.apache.lucene.codecs.BlockTermState;
+import com.senseidb.abacus.api.codec.term.VariableSizeTerms;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.codecs.FieldsProducer;
 import org.apache.lucene.index.FieldInfo;
@@ -27,6 +27,7 @@ public class AbFacetFieldsProducer extends FieldsProducer {
   private Map<String, byte[]> termsMap;
   private Map<String, FieldMeta> fieldMetaMap;
   private Map<String, Integer> termsLength;
+  private Map<String, int[]> termOffsets;
   public static class FieldMeta {
       public FieldInfo field;
       public int docCount;
@@ -35,12 +36,7 @@ public class AbFacetFieldsProducer extends FieldsProducer {
       public long sumDocFreq;
   }
 
-  public static class TermMetaWithState {
-      public int df;
-      public long totalTf;
-      public BlockTermState termState;
-  }
-  
+
   public AbFacetFieldsProducer(SegmentReadState state, AbFacetPostingsReader postingsReader) throws IOException{
     this.postingsReader = postingsReader;
 
@@ -49,6 +45,7 @@ public class AbFacetFieldsProducer extends FieldsProducer {
     invertedIndexes = new HashMap<String, DocIdSet[]>();
     termsMap = new HashMap<String, byte[]>();
     termsLength = new HashMap<String, Integer>();
+    termOffsets = new HashMap<String, int[]>();
     in = state.directory.openInput(IndexFileNames.segmentFileName(state.segmentInfo.name, state.segmentSuffix, AbFacetFieldsConsumer.EXT),
         state.context);
     int version = CodecUtil.checkHeader(in, AbFacetFieldsConsumer.CODEC,0,0);
@@ -58,7 +55,7 @@ public class AbFacetFieldsProducer extends FieldsProducer {
 
     int fieldCount = in.readVInt();
     postingsReader.init(in);
-    for (int i = 0; i < fieldCount; ++i) {
+    for (int fieldIndex = 0; fieldIndex < fieldCount; ++fieldIndex) {
       FieldMeta fieldMeta = new FieldMeta();
       
       int fieldId = in.readVInt();
@@ -81,12 +78,29 @@ public class AbFacetFieldsProducer extends FieldsProducer {
         frequencies[k] = in.readVInt();
         inverted[k] = postingsReader.loadNextPostingsList();
       }
+      boolean isEqualSize = true;
       for (int j = 1; j < lengths.length; j++) {
         if (lengths[0] != lengths[j]) {
-          throw new UnsupportedOperationException("All term lengths should be equal");
+          isEqualSize = false;
+          break;
         }
       }
-      termsLength.put(fieldMeta.field.name, lengths[0]);
+      if (isEqualSize) {
+        termsLength.put(fieldMeta.field.name, lengths[0]);
+      } else {
+        //converting to offsets
+
+        int previousLength = lengths[0];
+        lengths[0] = 0;
+        System.out.println(new BytesRef(termBytes, 0, lengths[0]).utf8ToString());
+        for (int i = 1; i < lengths.length; i++) {
+          int tmp = lengths[i];
+          lengths[i] = lengths[i - 1] + previousLength;
+          System.out.println(new BytesRef(termBytes, lengths[i], tmp).utf8ToString());
+          previousLength = tmp;
+        }
+        termOffsets.put(fieldMeta.field.name, lengths);
+      }
       invertedIndexes.put(fieldMeta.field.name, inverted);
       frequenciesMap.put(fieldMeta.field.name, frequencies);
       fieldMeta.sumDocFreq = in.readVLong();
@@ -108,8 +122,14 @@ public class AbFacetFieldsProducer extends FieldsProducer {
   @Override
   public Terms terms(String field) throws IOException {
     if (termsMap.containsKey(field)) {
-      return new BytesTerms(termsMap.get(field), termsLength.get(field),frequenciesMap.get(field),fieldMetaMap.get(field),
-         invertedIndexes.get(field), BytesRef.getUTF8SortedAsUnicodeComparator());
+      if (termsLength.containsKey(field)) {
+        return new BytesTerms(termsMap.get(field), termsLength.get(field),frequenciesMap.get(field),fieldMetaMap.get(field),
+          invertedIndexes.get(field), BytesRef.getUTF8SortedAsUnicodeComparator());
+      } else {
+        return new VariableSizeTerms(termsMap.get(field), termOffsets.get(field).length, termOffsets.get(field),
+          frequenciesMap.get(field),fieldMetaMap.get(field),
+          invertedIndexes.get(field), BytesRef.getUTF8SortedAsUnicodeComparator());
+      }
     } else {
       return null;
     }

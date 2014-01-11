@@ -98,6 +98,9 @@ public class AbFacetFieldsConsumer extends FieldsConsumer {
       out.writeVInt(termArr.length);
       for (int i=0; i<termArr.length; ++i) {
         BytesRef term = termArr[i];
+        if (fieldId == 3) {
+          System.out.println(term.utf8ToString());
+        }
         TermStats stats = termStats.get(i);
         out.writeVInt(term.length);
         out.writeVInt(stats.docFreq);

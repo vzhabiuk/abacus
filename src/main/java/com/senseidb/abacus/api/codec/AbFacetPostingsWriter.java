@@ -10,28 +10,10 @@ import org.apache.lucene.index.FieldInfo.IndexOptions;
 import org.apache.lucene.index.IndexFileNames;
 import org.apache.lucene.index.SegmentWriteState;
 import org.apache.lucene.store.IndexOutput;
-import org.apache.lucene.store.RAMOutputStream;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 
 import java.io.IOException;
-
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 public class AbFacetPostingsWriter extends PostingsWriterBase {
 
@@ -40,12 +22,11 @@ public class AbFacetPostingsWriter extends PostingsWriterBase {
 
   public final static int BLOCK_SIZE = 128;
 
- final static int VERSION_START = 0;
- final static int VERSION_CURRENT = VERSION_START;
+  final static int VERSION_START = 0;
+  final static int VERSION_CURRENT = VERSION_START;
   final IndexOutput docOut;
-
   private int currentDoc = -1;
-  
+
   private final int maxDoc;
   private final DocIdSetCollector docidCollector;
 
@@ -54,11 +35,9 @@ public class AbFacetPostingsWriter extends PostingsWriterBase {
     maxDoc = state.segmentInfo.getDocCount();
 
     docOut = state.directory.createOutput(IndexFileNames.segmentFileName(state.segmentInfo.name, state.segmentSuffix,
-        AbacusFacetPostingsFormat.DOC_EXTENSION),
-        state.context);
-
+      AbacusFacetPostingsFormat.DOC_EXTENSION),
+      state.context);
     boolean success = false;
-
     try {
       CodecUtil.writeHeader(docOut, DOC_CODEC, VERSION_CURRENT);
       success = true;
@@ -81,26 +60,19 @@ public class AbFacetPostingsWriter extends PostingsWriterBase {
     docidCollector.reset(maxDoc);
   }
 
-    @Override
-    public void finishTerm(TermStats stats) throws IOException {
-        //docOut.writeVInt(stats.docFreq);
-        docidCollector.flush(stats, docOut);
-        docOut.flush();
-    }
-
-
-    private final RAMOutputStream bytesWriter = new RAMOutputStream();
+  @Override
+  public void finishTerm(TermStats stats) throws IOException {
+    docidCollector.flush(stats, docOut);
+    docOut.flush();
+  }
 
   @Override
   public void flushTermsBlock(int start, int count) throws IOException {
-
   }
-
-
 
   @Override
   public void setField(FieldInfo fieldInfo) {
-      assert IndexOptions.DOCS_ONLY == fieldInfo.getIndexOptions();
+    assert IndexOptions.DOCS_ONLY == fieldInfo.getIndexOptions();
   }
 
   @Override
@@ -115,12 +87,12 @@ public class AbFacetPostingsWriter extends PostingsWriterBase {
 
   @Override
   public void addPosition(int position, BytesRef payload, int startOffset,
-      int endOffset) throws IOException {
+                          int endOffset) throws IOException {
     // we don't handle positions for facet fields
   }
 
   @Override
-  public void finishDoc() throws IOException {    
+  public void finishDoc() throws IOException {
     docidCollector.collect(currentDoc);
   }
 }
