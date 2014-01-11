@@ -92,11 +92,9 @@ public class AbFacetFieldsProducer extends FieldsProducer {
 
         int previousLength = lengths[0];
         lengths[0] = 0;
-        System.out.println(new BytesRef(termBytes, 0, lengths[0]).utf8ToString());
         for (int i = 1; i < lengths.length; i++) {
           int tmp = lengths[i];
           lengths[i] = lengths[i - 1] + previousLength;
-          System.out.println(new BytesRef(termBytes, lengths[i], tmp).utf8ToString());
           previousLength = tmp;
         }
         termOffsets.put(fieldMeta.field.name, lengths);
