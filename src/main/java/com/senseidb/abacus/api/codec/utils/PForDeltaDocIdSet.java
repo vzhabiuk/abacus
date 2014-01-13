@@ -69,15 +69,15 @@ public class PForDeltaDocIdSet extends DocSet implements Serializable {
     PForDeltaDocIdSet res = new PForDeltaDocIdSet();
     // 0. totalNumInt
     int totalNumInt = Conversion.byteArrayToInt(bytesData, offset);
-    System.out.println("totalNumInt " + offset);
+    //System.out.println("totalNumInt " + offset);
     offset += Conversion.BYTES_PER_INT;
     // 1. version
     res.version = Conversion.byteArrayToInt(bytesData, offset);
-    System.out.println("version " + offset);
+    //System.out.println("version " + offset);
     offset += Conversion.BYTES_PER_INT;
     // 2. blockSize
     int blkSize = Conversion.byteArrayToInt(bytesData, offset);
-    System.out.println("blkSize " + offset);
+    //System.out.println("blkSize " + offset);
     offset += Conversion.BYTES_PER_INT;
     if(res._blockSize != blkSize)
     {
@@ -87,38 +87,38 @@ public class PForDeltaDocIdSet extends DocSet implements Serializable {
 
     // 3. lastAdded
     res.lastAdded = Conversion.byteArrayToInt(bytesData, offset);
-    System.out.println("lastAdded " + offset);
+    //System.out.println("lastAdded " + offset);
     offset += Conversion.BYTES_PER_INT;
 
     // 4. totalDocIdNum
     res.totalDocIdNum = Conversion.byteArrayToInt(bytesData, offset);
-    System.out.println("totalDocIdNum " + offset);
+    //System.out.println("totalDocIdNum " + offset);
     offset += Conversion.BYTES_PER_INT;
 
     // 5. compressedBitSize
     res.compressedBitSize = Conversion.byteArrayToLong(bytesData, offset);
-    System.out.println("compressedBitSize " + offset);
+    //System.out.println("compressedBitSize " + offset);
     offset += Conversion.BYTES_PER_LONG;
 
     // 6. base (skipping info)
     res.baseListForOnlyCompBlocks = IntArray.newInstanceFromBytes(bytesData, offset);
-    System.out.println("baseListForOnlyCompBlocks " + offset);
+    //System.out.println("baseListForOnlyCompBlocks " + offset);
     offset += (IntArray.getSerialIntNum(res.baseListForOnlyCompBlocks) * Conversion.BYTES_PER_INT);
 
     // 7. the last block (uncompressed)
     int noCompBlockSize = Conversion.byteArrayToInt(bytesData, offset);
-    System.out.println("noCompBlockSize " + offset);
+    //System.out.println("noCompBlockSize " + offset);
     offset += Conversion.BYTES_PER_INT;
     for(int i=0; i<noCompBlockSize; i++)
     {
       res.currentNoCompBlock[i] = Conversion.byteArrayToInt(bytesData, offset);
-      System.out.println("currentNoCompBlock " + i + " "  + offset);
+      //System.out.println("currentNoCompBlock " + i + " "  + offset);
       offset += Conversion.BYTES_PER_INT;
     }
 
     // 8. compressed blocks
     res.sequenceOfCompBlocks = PForDeltaIntSegmentArray.newInstanceFromBytes(bytesData, offset);
-    System.out.println("sequenceOfCompBlocks "  + offset);
+    //System.out.println("sequenceOfCompBlocks "  + offset);
     offset += (PForDeltaIntSegmentArray.getSerialIntNum(res.sequenceOfCompBlocks) * Conversion.BYTES_PER_INT);
 
     // 9. checksum
@@ -127,7 +127,7 @@ public class PForDeltaDocIdSet extends DocSet implements Serializable {
     long checksum = digest.getValue();
 
     long receivedChecksum = Conversion.byteArrayToLong(bytesData, offset);
-    System.out.println("receivedChecksum "  + offset);
+    //System.out.println("receivedChecksum "  + offset);
     if(receivedChecksum != checksum)
     {
       //throw new IOException("serialization error: check sum does not match: ");
@@ -160,50 +160,50 @@ public class PForDeltaDocIdSet extends DocSet implements Serializable {
 
     // 0. totalNumInt
     Conversion.intToByteArray(totalNumInt, bytesData, offset);
-    System.out.println("totalNum int " + offset);
+    //System.out.println("totalNum int " + offset);
     offset += Conversion.BYTES_PER_INT;
     int startOffset = offset;
     // 1. version
     Conversion.intToByteArray(pForDeltaDocIdSet.version, bytesData, offset);
-    System.out.println("version " + offset);
+    //System.out.println("version " + offset);
     offset += Conversion.BYTES_PER_INT;
     // 2. blockSize
     Conversion.intToByteArray(pForDeltaDocIdSet._blockSize, bytesData, offset);
-    System.out.println("_blockSize  " + offset);
+    //System.out.println("_blockSize  " + offset);
     offset += Conversion.BYTES_PER_INT;
     // 3. lastAdded
     Conversion.intToByteArray(pForDeltaDocIdSet.lastAdded, bytesData, offset);
-    System.out.println("lastAdded  " + offset);
+    //System.out.println("lastAdded  " + offset);
     offset += Conversion.BYTES_PER_INT;
     // 4. totalDocIdNum
     Conversion.intToByteArray(pForDeltaDocIdSet.totalDocIdNum, bytesData, offset);
-    System.out.println("totalDocIdNum  " + offset);
+    //System.out.println("totalDocIdNum  " + offset);
     offset += Conversion.BYTES_PER_INT;
 
     // 5. compressedBitSize
     Conversion.longToByteArray(pForDeltaDocIdSet.compressedBitSize, bytesData, offset);
-    System.out.println("compressedBitSize  " + offset);
+    //System.out.println("compressedBitSize  " + offset);
     offset += Conversion.BYTES_PER_LONG;
 
     // 6. base (skipping info)
     int baseIntNum = IntArray.convertToBytes(pForDeltaDocIdSet.baseListForOnlyCompBlocks, bytesData, offset);
-    System.out.println("baseIntNum  " + offset);
+    //System.out.println("baseIntNum  " + offset);
     offset += (baseIntNum * Conversion.BYTES_PER_INT);
 
     // 7. the last block (uncompressed)
     Conversion.intToByteArray(pForDeltaDocIdSet.sizeOfCurrentNoCompBlock, bytesData, offset);
-    System.out.println("sizeOfCurrentNoCompBlock  " + offset);
+    //System.out.println("sizeOfCurrentNoCompBlock  " + offset);
     offset += Conversion.BYTES_PER_INT;
     for(int i=0; i<pForDeltaDocIdSet.sizeOfCurrentNoCompBlock; i++)
     {
       Conversion.intToByteArray(pForDeltaDocIdSet.currentNoCompBlock[i], bytesData, offset);
-      System.out.println("currentNoCompBlock" + i + " " + offset);
+      //System.out.println("currentNoCompBlock" + i + " " + offset);
       offset += Conversion.BYTES_PER_INT;
     }
 
     // 8. compressed blocks
     PForDeltaIntSegmentArray.convertToBytes(pForDeltaDocIdSet.sequenceOfCompBlocks, bytesData, offset);
-    System.out.println("sequenceOfCompBlocks  " + offset);
+    //System.out.println("sequenceOfCompBlocks  " + offset);
     offset += (seqCompBlockIntNum*Conversion.BYTES_PER_INT);
 
     // 9. checksum
@@ -212,7 +212,7 @@ public class PForDeltaDocIdSet extends DocSet implements Serializable {
     long checksum = digest.getValue();
 
     Conversion.longToByteArray(checksum, bytesData, offset);
-    System.out.println("checksum  " + offset);
+    //System.out.println("checksum  " + offset);
     return bytesData;
   }
 
@@ -756,15 +756,15 @@ public class PForDeltaDocIdSet extends DocSet implements Serializable {
 
   private void printBlock(int[] block, int size)
   {
-    System.out.println(" ");
-    System.out.println("to compress a block of size " + size);
+    //System.out.println(" ");
+    //System.out.println("to compress a block of size " + size);
     System.out.print("[");
     for(int i=0; i<size; i++)
     {
       System.out.print(block[i]);
       System.out.print(" ");
     }
-    System.out.println("]");
+    //System.out.println("]");
   }
 
 
@@ -1022,7 +1022,7 @@ public class PForDeltaDocIdSet extends DocSet implements Serializable {
         System.out.print(list[i]);
         System.out.print(", ");
       }
-      System.out.println("]");
+      //System.out.println("]");
     }
 
     private void printSet()

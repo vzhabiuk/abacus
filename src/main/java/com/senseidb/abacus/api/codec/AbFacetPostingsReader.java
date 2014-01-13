@@ -1,7 +1,7 @@
 package com.senseidb.abacus.api.codec;
 
 import com.senseidb.abacus.api.codec.common.DocIdSetCollector;
-import com.senseidb.abacus.api.codec.postings.OpenBitsetDocIdSetCollector;
+import com.senseidb.abacus.api.codec.postings.DefaultDocIdSetCollector;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.index.IndexFileNames;
 import org.apache.lucene.index.SegmentReadState;
@@ -19,7 +19,7 @@ public class AbFacetPostingsReader implements Closeable{
 
   public AbFacetPostingsReader(SegmentReadState state) throws IOException{
     boolean success = false;
-    this.docIdSetCollector = new OpenBitsetDocIdSetCollector();
+    this.docIdSetCollector = new DefaultDocIdSetCollector();
     IndexInput in = null;
     try {
       in = state.directory.openInput(IndexFileNames.segmentFileName(state.segmentInfo.name, state.segmentSuffix, AbacusFacetPostingsFormat.DOC_EXTENSION),

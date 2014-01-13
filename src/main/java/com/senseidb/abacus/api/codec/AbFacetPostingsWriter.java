@@ -1,7 +1,7 @@
 package com.senseidb.abacus.api.codec;
 
 import com.senseidb.abacus.api.codec.common.DocIdSetCollector;
-import com.senseidb.abacus.api.codec.postings.OpenBitsetDocIdSetCollector;
+import com.senseidb.abacus.api.codec.postings.DefaultDocIdSetCollector;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.codecs.PostingsWriterBase;
 import org.apache.lucene.codecs.TermStats;
@@ -31,7 +31,7 @@ public class AbFacetPostingsWriter extends PostingsWriterBase {
   private final DocIdSetCollector docidCollector;
 
   public AbFacetPostingsWriter(SegmentWriteState state) throws IOException{
-    this.docidCollector = new OpenBitsetDocIdSetCollector();
+    this.docidCollector = new DefaultDocIdSetCollector();
     maxDoc = state.segmentInfo.getDocCount();
 
     docOut = state.directory.createOutput(IndexFileNames.segmentFileName(state.segmentInfo.name, state.segmentSuffix,
